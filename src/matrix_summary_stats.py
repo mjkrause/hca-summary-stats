@@ -12,6 +12,6 @@ class MatrixSummaryStats:
     def get_max_gene_count(self):
         with loompy.connect(self.loomfile) as ds:
             gene_count = ds.ca['genes_detected']
-            
+
         pass
 

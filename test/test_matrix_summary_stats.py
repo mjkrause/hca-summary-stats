@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
+import os
 import unittest
-import loompy
 from src.matrix_summary_stats import MatrixSummaryStats
 
 class TestMatrixSummaryStats(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.loomfile = 'test/data/58eefffe-f0af-490b-ae49-bce09602b8e6.loom'
+        path = os.path.dirname(os.path.abspath(os.curdir))
+        self.mtxfile = os.path.join(path, 'test/data/mtxfile')
+        self.mss = MatrixSummaryStats(self.mtxfile)
 
-    def test_gene_max_count(self):
-        pass
+    def test_eliminate_dupes(self):
+        print(self.mss.eliminate_dupes())
+        self.assert

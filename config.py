@@ -1,2 +1,14 @@
-endpoints = {'list_projects': '',
-             'get_expression_matrix': 'https://matrix.staging.data.humancellatlas.org/v1/matrix'}
+endpoints = {
+    'hca_matrix_service_url': 'https://matrix.staging.data.humancellatlas.org/v1'
+}
+
+# Default parameters to requests an gene expression matrix.
+post_expression_matrix_params = {
+    'feature': 'gene',
+    'fields': [
+        'featurekey', 'featurename'
+    ],
+    'filter': {},
+    'format': 'mtx'
+}
+

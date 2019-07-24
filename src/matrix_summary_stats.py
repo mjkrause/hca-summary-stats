@@ -67,6 +67,7 @@ class MatrixSummaryStats:
         pass
 
     def create_images(self) -> None:
+        # ToDo: parameterize...
         # Highest-expressing genes.
         adata = sc.read_10x_mtx(self.matrix_path, var_names='gene_symbols', cache=True)
         adata.var_names_make_unique()
@@ -75,7 +76,7 @@ class MatrixSummaryStats:
         # Highest-variable genes:
         sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e3)
         sc.pp.log1p(adata)  # logarithmize
-        adata.raw = adata  # save raw data for later use
+        adata.raw = adata   # save raw data
         sc.pp.log1p(adata)
         adata.raw = adata
         sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)

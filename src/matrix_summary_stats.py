@@ -10,6 +10,7 @@ import scanpy as sc
 import config
 import requests
 import logging
+import boto3
 from zipfile import ZipFile
 from more_itertools import first
 
@@ -27,6 +28,7 @@ class MatrixSummaryStats:
 
     def get_expression_matrix(self) -> None:
         status_response = self._request_matrix()
+        assert status_response == 200
         s3_download_url = status_response.json()['matrix_url']
         self.matrix_response = requests.get(s3_download_url, stream=True)
         self.matrix_zipfile_name = os.path.basename(s3_download_url)
@@ -63,20 +65,31 @@ class MatrixSummaryStats:
         self.barcodes = os.path.abspath('barcodes.tsv')
         os.chdir(root_dir)
 
-    def push_to_s3(self):
-        pass
+    def upload_figs_to_s3(self):
+        bucket_name = config.s3_bucket['bucket_name']
+        key = config.s3_bucket['key']
+        client = boto3.client('s3')
+        figures = os.listdir('figures/')
+        if figures is None:
+            return
+        else:
+            for figure in figures:
+                key = key + figure
+                logger.info(f'Uploading {figure} to S3 bucket {bucket_name} into {key}')
+                client.upload_file(Filename=f'figures/{figure}', Bucket=bucket_name, Key=key)
 
     def create_images(self, path=None) -> None:
         # ToDo: parameterize...
-        # Highest-expressing genes.
-        root_dir = os.os.getcwd()
+
+        # 1. Figure: highest-expressing genes.
+        root_dir = os.getcwd()
         if path:
             os.chdir(path)
         adata = sc.read_10x_mtx(self.matrix_path, var_names='gene_symbols', cache=True)
         adata.var_names_make_unique()
         sc.pl.highest_expr_genes(adata, n_top=20, save='.png', show=False)
 
-        # Highest-variable genes:
+        # 2. Figure: highest-variable genes:
         sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e3)
         sc.pp.log1p(adata)  # logarithmize
         adata.raw = adata   # save raw data
@@ -129,7 +142,8 @@ class MatrixSummaryStats:
 
     @staticmethod
     def preprocessing(fileobj: gzip.GzipFile) -> None:
-        """Preprocessing TSV files from Matrix Service in order to use scanpy methods on matrix."""
+        """Remove headers and columns to prepare TSV files in mtx directory to make them
+        compatible for use with ScanPy methods."""
         f = pd.read_table(fileobj, sep='\t')  # Pandas dataframe
         col_to_keep = []
         if fileobj.name == 'genes.tsv.gz':
@@ -140,6 +154,8 @@ class MatrixSummaryStats:
             fileobj.name = 'barcodes.tsv.gz'
             col_to_keep = 'cellkey'
             assert col_to_keep in f.columns
+        else:
+            raise ValueError('Expected genes.tsv.gz and cells.tsv.gz in directory.')
         f_new = f[col_to_keep]
         # Write to file without column or row headers.
         f_new.to_csv(first(os.path.splitext(fileobj.name)), index=False, header=False, sep='\t')

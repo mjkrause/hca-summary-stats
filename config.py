@@ -12,3 +12,5 @@ post_expression_matrix_params = {
     'format': 'mtx'
 }
 
+s3_bucket = {'bucket_name': 'dev.project-assets.data.humancellatlas.org',
+             'key': 'project-assets/project-stats/'}

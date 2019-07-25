@@ -38,7 +38,7 @@ class MatrixSummaryStats:
         with open(self.matrix_zipfile_name, 'wb') as matrix_zip_file:
             shutil.copyfileobj(self.matrix_response.raw, matrix_zip_file)
         ZipFile(self.matrix_zipfile_name).extractall()
-        self.matrix_path = first(os.path.splitext(self.matrix_zipfile_name))  # remove extension ".zip"
+        self.matrix_path = first(os.path.splitext(self.matrix_zipfile_name))  # remove ".zip"
         os.chdir(self.matrix_path)
         files = os.listdir('.')
 

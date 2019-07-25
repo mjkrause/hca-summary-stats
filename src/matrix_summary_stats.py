@@ -66,9 +66,12 @@ class MatrixSummaryStats:
     def push_to_s3(self):
         pass
 
-    def create_images(self) -> None:
+    def create_images(self, path=None) -> None:
         # ToDo: parameterize...
         # Highest-expressing genes.
+        root_dir = os.os.getcwd()
+        if path:
+            os.chdir(path)
         adata = sc.read_10x_mtx(self.matrix_path, var_names='gene_symbols', cache=True)
         adata.var_names_make_unique()
         sc.pl.highest_expr_genes(adata, n_top=20, save='.png', show=False)
